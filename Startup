@@ -1,0 +1,145 @@
+using System;
+using System.Collections.ObjectModel;
+using System.Data;
+using System.IO;
+using AspNetCore.Security.CAS;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SpaServices.AngularCli;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using Newtonsoft.Json.Serialization;
+using Repository;
+using Repository.Repositories;
+using Serilog;
+using Serilog.Events;
+using Serilog.Sinks.MSSqlServer;
+namespace BRD
+{
+    public class Startup
+    {
+        public Startup(IConfiguration configuration)
+        {
+            Configuration = configuration;
+        }
+
+        public IConfiguration Configuration { get; }
+
+        public void ConfigureServices(IServiceCollection services)
+        {
+            services.AddCors();
+            var configuration = new ConfigurationBuilder().SetBasePath(Directory.GetCurrentDirectory()).AddJsonFile("appsettings.json", optional: false, reloadOnChange: true).Build();
+            services.AddControllersWithViews();
+            services.AddDbContext<CrystalContext>(options => options.UseSqlServer(configuration.GetConnectionString("CRYSTAL")));
+            services.AddDbContext<BRDContext>(options => options.UseSqlServer(configuration.GetConnectionString("BRD")));
+            services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+            services.AddControllers().AddNewtonsoftJson(options =>
+            {
+                options.SerializerSettings.ContractResolver = new DefaultContractResolver();
+            });
+            services.AddSpaStaticFiles(configuration =>
+            {
+                configuration.RootPath = "ClientApp/dist/ClientApp";
+            });
+
+            services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+               .AddCookie(o =>
+               {
+                   o.LoginPath = new PathString("/login");
+                   o.AccessDeniedPath = new PathString("/access-denied");
+                   o.Cookie = new CookieBuilder
+                   {
+                       Name = ".AspNetCore.CasSample"
+                   };
+
+               }).AddCAS(o =>
+               {
+                   o.CasServerUrlBase = Configuration["CasBaseUrl"];
+                   o.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+               });
+
+
+            var globalAuthPolicy = new AuthorizationPolicyBuilder()
+               .RequireAuthenticatedUser()
+               .Build();
+
+            services.AddCors(options =>
+            {
+                options.AddPolicy("AllowMyOrigin",
+                builder => builder.WithOrigins(Configuration["CasBaseUrl"]));
+            });
+            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
+            /////////////////Sterilo log///////////////////////////////
+            var columnOption = new ColumnOptions();
+            columnOption.Store.Remove(StandardColumn.MessageTemplate);
+
+            columnOption.AdditionalDataColumns = new Collection<DataColumn>
+                            {
+                                new DataColumn {DataType = typeof (string), ColumnName = "UserId"},
+                                new DataColumn{DataType=typeof(string),ColumnName="Ip"},
+                                new DataColumn{DataType=typeof(string),ColumnName="Method"},
+                                new DataColumn{DataType=typeof(DateTime),ColumnName="Login"},
+                                new DataColumn{DataType=typeof(DateTime),ColumnName="Logout"}
+                            };
+
+            Log.Logger = new LoggerConfiguration()
+                            .MinimumLevel.Information()
+                            .MinimumLevel.Override("SerilogDemo", LogEventLevel.Information)
+                            .WriteTo.MSSqlServer(configuration["Serilog:ConnectionString"], configuration["Serilog:TableName"],
+                                    columnOptions: columnOption
+                                    )
+                            .CreateLogger();
+
+            //////////////////////////End//////////////////////
+        }
+
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILoggerFactory loggerFactor)
+        {
+
+
+            app.UseCors(options => options.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
+            app.UseCors("AllowMyOrigin");
+            if (env.IsDevelopment())
+            {
+                app.UseDeveloperExceptionPage();
+            }
+            else
+            {
+                app.UseExceptionHandler("/Error");
+            }
+            app.UseHttpsRedirection();
+            app.UseStaticFiles();
+
+            if (!env.IsDevelopment())
+            {
+                app.UseSpaStaticFiles();
+            }
+            app.UseRouting();
+            app.UseAuthentication();
+            app.UseAuthorization();
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllerRoute(
+                    name: "default",
+                    pattern: "{controller}/{action=Index}/{id?}");
+            });
+            app.UseSpa(spa =>
+            {
+                spa.Options.SourcePath = "ClientApp";
+
+                if (env.IsDevelopment())
+                {
+                    spa.UseAngularCliServer(npmScript: "start");
+                }
+            });
+        }
+    }
+}
