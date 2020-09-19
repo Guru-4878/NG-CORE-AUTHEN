@@ -1,0 +1,50 @@
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Text;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.EntityFrameworkCore.Metadata;
+using Models.Tables.CRYSTAL;
+using Microsoft.Extensions.Configuration.Json;
+using Microsoft.Data.SqlClient;
+
+namespace Repository
+{
+    public class CrystalContext : DbContext
+    {
+
+        public CrystalContext()
+        {
+        }
+        public CrystalContext(DbContextOptions<CrystalContext> options) : base(options)
+        {
+            ChangeTracker.LazyLoadingEnabled = false;
+        }
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            var configurationBuilder = new ConfigurationBuilder();
+            var path = Path.Combine(Directory.GetCurrentDirectory(), "appsettings.json");
+            configurationBuilder.AddJsonFile(path, false);
+            var root = configurationBuilder.Build().GetConnectionString("CRYSTAL");
+            if (!optionsBuilder.IsConfigured)
+            {
+                optionsBuilder.UseSqlServer(root);
+            }
+        }
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+        }
+        public DbSet<HRMS_GRADE_MST> HRMS_GRADE_MST { get; set; }
+        public DbSet<HRMS_PROCESS_MST> HRMS_PROCESS_MST { get; set; }
+        public DbSet<HRMS_PROJ_MST> HRMS_PROJ_MST { get; set; }
+        public DbSet<TOUCH_WORKPLACE_URL> TOUCH_WORKPLACE_URL { get; set; }
+        public DbSet<ViewEmployeeDetails> ViewEmployeeDetails { get; set; }
+
+        
+
+
+    }
+}
