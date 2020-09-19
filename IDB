@@ -1,0 +1,18 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Linq.Expressions;
+using System.Threading.Tasks;
+
+namespace Repository.Repositories
+{
+   
+   public interface IDbContext
+    {
+
+        //IDbSet<TEntity> Set<TEntity>() where TEntity : class;
+        //int SaveChanges();
+
+        //DbEntityEntry Entry(object entity);
+    }
+}
