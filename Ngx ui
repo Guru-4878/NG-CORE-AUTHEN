@@ -1,0 +1,79 @@
+import { BrowserModule } from '@angular/platform-browser';
+import { NgModule, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { RouterModule, Routes } from '@angular/router';
+import { HttpClientModule } from '@angular/common/http';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { ToastrModule } from 'ngx-toastr';
+import { AppComponent } from './app.component';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { AppRoutingModule } from './app-routing.module';
+import { TableModule } from 'primeng/table';
+import { InputTextModule } from 'primeng/inputtext';
+import { GlobalUtils } from '../app/Globalvariables';
+import { AjubaModule } from '../Ajuba/ajuba.module';
+import { ApiSharedService } from '../Services/APIHelper';
+import { Httpinterceptproviders } from '../app/index';
+import { ToasterService } from '../Services/Toaster.service';
+import { NgxUiLoaderModule, NgxUiLoaderHttpModule, NgxUiLoaderRouterModule, NgxUiLoaderConfig, POSITION, SPINNER, PB_DIRECTION } from 'ngx-ui-loader';
+import { BRDModule } from '../BRD/BRD.module';
+import { BRDAppRoutingModule } from '../app/BRD.routing';
+import { BnNgIdleService } from 'bn-ng-idle';
+import { AlertComponent } from '../Ajuba/Alert';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
+
+
+
+
+const Config: NgxUiLoaderConfig = {
+  bgsColor: "#09ecfb",
+  bgsOpacity: 0.5,
+  bgsPosition: "bottom-right",
+  bgsSize: 60,
+  bgsType: "three-strings",
+  blur: 5,
+  delay: 0,
+  fgsColor: "#09ecfb",
+  fgsPosition: "center-center",
+  fgsSize: 60,
+  fgsType: "three-strings",
+  gap: 24,
+  logoPosition: "center-center",
+  logoSize: 120,
+  masterLoaderId: "master",
+  overlayBorderRadius: "0",
+  overlayColor: "rgba(40, 40, 40, 0.8)",
+  pbColor: "RED",
+  pbDirection: "ltr",
+  pbThickness: 5,
+  hasProgressBar: true,
+  text: "Loading......",
+  textColor: "#FFFFFF",
+  textPosition: "center-center",
+  maxTime: -1,
+  minTime: 300
+};
+
+@NgModule({
+  declarations: [
+    AppComponent, AlertComponent
+  ],
+  imports: [
+    HttpClientModule, BrowserAnimationsModule, TableModule, InputTextModule,
+    BrowserModule, FormsModule, ReactiveFormsModule, AjubaModule, BRDModule, BRDAppRoutingModule,
+    AppRoutingModule, ToastrModule.forRoot({
+      timeOut: 10000,
+      positionClass: 'toast-bottom-right',
+      closeButton: true,
+      preventDuplicates: true,
+    }),
+    NgxUiLoaderModule.forRoot(Config),
+    NgxUiLoaderHttpModule.forRoot({ showForeground: true }),
+    NgxUiLoaderRouterModule.forRoot({ showForeground: true }),
+    ConfirmDialogModule
+
+  ],
+  providers: [GlobalUtils, ApiSharedService, Httpinterceptproviders, ToasterService, BnNgIdleService, ConfirmDialogModule],
+  bootstrap: [AppComponent], schemas: [CUSTOM_ELEMENTS_SCHEMA]
+})
+export class AppModule { }
+<ngx-ui-loader></ngx-ui-loader>
