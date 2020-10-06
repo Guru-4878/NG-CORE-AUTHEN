@@ -1,1 +1,105 @@
-https://www.c-sharpcorner.com/article/authentication-and-authorization-in-asp-net-core-web-api-with-json-web-tokens/
+
+      <form id="add_interested_mem_reg">
+         <fieldset>   
+            <div class="row">
+               <div class="col-md-6">
+                  <div class="form-group">
+                     <label>Branch Name<span style="color:#ff6c60;">*</span></label>
+                     <select id="i_branch_name" name="i_branch_name" class="form-control select_2">
+                     </select>  
+                  </div>
+               </div>
+               <div class="col-md-6">
+                  <div class="form-group">
+                     <label>Chit Amount<span style="color:#ff6c60;">*</span></label>
+                     <select id="i_chit_amount" name="i_chit_amount" class="form-control select_2">
+                     </select> 
+                  </div>
+               </div>
+               <div class="col-md-6">
+                  <div class="form-group">
+                     <label>Member Name<span style="color:#ff6c60;">*</span></label>
+                     <select id="i_member_name" name="i_member_name" class="form-control select_2" required>
+               
+                     </select>
+                  </div>
+               </div>
+               <div class="col-md-6">
+                  <div class="form-group">
+                     <label>Form Received Date<span style="color:#ff6c60;">*</span></label>
+                     <input id="i_reci_date" name="i_reci_date" type="text" class="form-control datepicker" placeholder="Select date" data-date-format="dd-mm-yyyy" required>
+                     <input id="i_total_ticket" type='hidden' name="i_total_ticket" class="form-control" value='1'>
+                  </div>
+               </div>
+               <div class="col-md-6">
+                  <div class="form-group">
+                     <label>Adviser Type<span style="color:#ff6c60;">*</span></label>
+                     <select id="i_adviser_type" name="i_adviser_type" class="form-control select_2" required>
+                     <option></option>
+                     <option value="Advisor">Advisor</option>
+                     <option value="Member">Member</option>
+                     <option value="Employeed">Employee</option>
+     
+                     </select>
+                  </div>
+               </div>
+               <div class="col-md-6">
+                  <div class="form-group">
+                     <label>Adviser<span style="color:#ff6c60;">*</span></label>
+                     <select id="i_adviser" name="i_adviser" class="form-control select_2" required>
+                     <option></option>
+                     </select>
+                  </div>
+               </div>
+            </div>
+         </fieldset>
+      </form>
+      
+<!-- Edit Modal -->
+<ng-template #EditModal let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title" id="EditModalLabel">{{popuptitle}}</h4>
+    <button type="button" class="close" (click)="ClearScreen();areaform.reset();modal.close('by: close icon')"
+      aria-label="Close">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <form id="area_edit_form" autocomplete="off" #areaform="ngForm"
+      (ngSubmit)="areaform.form.valid&&save_update_area(areaform)">
+      <fieldset>
+        <div class="row">
+          <div class="col-md-6">
+            <div class="form-group"><label>Branch Name</label><br>
+              <ng-select [searchable]="true" [items]="BRANCHDRP"
+                [ngClass]="{ 'is-invalid': areaform.submitted && branch_id.invalid }" bindValue="id"
+                bindLabel="branch_name" name="branch_id" #branch_id="ngModel" [(ngModel)]="area.branch_id"
+                placeholder="Branch Name" required>
+              </ng-select>
+              <div *ngIf="areaform.submitted && branch_id.invalid " class="invalid-feedback">
+                <div *ngIf="branch_id.errors.required">Branch Name is required</div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label>Area Name<span style="color:#ff6c60;">*</span></label>
+              <input [ngClass]="{ 'is-invalid': areaform.submitted && area_name.invalid }" name="area_name"
+                #area_name="ngModel" [(ngModel)]="area.area_name" type="text" class="form-control "
+                placeholder="Area Name" required>
+              <div *ngIf="areaform.submitted && area_name.invalid" class="invalid-feedback">
+                <div *ngIf="area_name.errors.required">Area Name is required</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </fieldset>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal"
+          (click)="ClearScreen();areaform.reset();modal.close('by: close icon')">Close</button>
+        <button type="sumbit" class="btn btn-info"><i class="fa fa-plus"></i>
+          {{btn}}</button>
+      </div>
+    </form>
+  </div>
+</ng-template>
