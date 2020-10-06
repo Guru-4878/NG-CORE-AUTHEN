@@ -11,3 +11,17 @@ GetMemberBasedonBranch=Enroll/GetMemberBasedonBranch
 GetAdvisorBasedonBranch=Enroll/GetAdvisorBasedonBranch
 GetGroupEnroll=Enroll/GetGroupEnroll
 SaveUpdateEnrollment=Enroll/SaveUpdateEnrollment
+  GetGroup(): Observable<any[]> {
+        return this.http.get<any[]>(`${environment.API_Base_URL}` + this.constants.GetGroup);
+    }
+    SaveUpdateGroup(model: any): Observable<any> {
+        return this.http.post<any>(`${environment.API_Base_URL}` + this.constants.SaveUpdateGroup, model);
+    }
+    DeleteGroup(id: any): Observable<any> {
+        return this.http.delete<any>(`${environment.API_Base_URL}` + this.constants.DeleteGroup + id);
+    }
+
+}
+
+
+
