@@ -1,0 +1,13 @@
+
+GetGroup=Enroll/GetGroup
+SaveUpdateGroup=Enroll/SaveUpdateGroup
+DeleteGroup=Enroll/DeleteGroup/{id}
+ApproveGroup=Enroll/ApproveGroup
+GetGroupPendingDuration=Enroll/GetGroupPendingDuration
+GetInterestedMember=Enroll/GetInterestedMember
+SaveUpdateInterestedMember=Enroll/SaveUpdateInterestedMember
+DeleteInterestedMember=Enroll/DeleteInterestedMember/{id}
+GetMemberBasedonBranch=Enroll/GetMemberBasedonBranch
+GetAdvisorBasedonBranch=Enroll/GetAdvisorBasedonBranch
+GetGroupEnroll=Enroll/GetGroupEnroll
+SaveUpdateEnrollment=Enroll/SaveUpdateEnrollment
