@@ -1,0 +1,54 @@
+import { Injectable } from '@angular/core';
+import { Router } from '@angular/router';
+import { IProfile } from '../UserDetails/user.model'
+@Injectable()
+export class UserProfile {
+    userProfile: IProfile = {
+        token: "",
+        expiration: "",
+        claim: null,
+        name: null,
+        status: null,
+        isfirstime: null
+    };
+    constructor(private router: Router) {
+    }
+    setProfile(profile: IProfile): void {
+       
+        //http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name
+        // var user_name = profile.claim.filter(p => p.type == 'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name')[0].value;
+        // var user_id = profile.claim.filter(p => p.type == 'user_id')[0].value;
+        // var user_type = profile.claim.filter(p => p.type == 'user_type')[0].value;
+        // var member_id = profile.claim.filter(p => p.type == 'member_id')[0].value;
+        sessionStorage.setItem('access_token', profile.token);
+        sessionStorage.setItem('expires_in', profile.expiration);
+      //  sessionStorage.setItem('user_id', user_id);
+        sessionStorage.setItem('user_name', profile.name);
+      //  sessionStorage.setItem('user_type', user_type);
+        //sessionStorage.setItem('member_id', member_id);
+    }
+
+    getProfile(authorizationOnly: boolean = false): IProfile {
+        var accessToken = sessionStorage.getItem('access_token');
+        if (accessToken) {
+            this.userProfile.token = accessToken;
+            this.userProfile.expiration = sessionStorage.getItem('expires_in');
+        }
+        return this.userProfile;
+    }
+
+    resetProfile(): IProfile {
+        sessionStorage.removeItem('access_token');
+        sessionStorage.removeItem('expires_in');
+        this.userProfile = {
+            token: "",
+            expiration: "",
+            claim: null,
+            name: null,
+            status: null,
+            isfirstime: null
+        };
+        return this.userProfile;
+    }
+
+}
