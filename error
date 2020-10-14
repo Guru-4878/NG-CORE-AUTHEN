@@ -1,0 +1,51 @@
+import { HttpInterceptor, HttpRequest, HttpHandler, HttpErrorResponse } from '@angular/common/http';
+import { Injectable } from '@angular/core';
+import { catchError, tap } from 'rxjs/operators';
+import { throwError } from 'rxjs'
+import { UserService } from '../../views/pages/auth/UserDetails/user.service';
+import { Router } from '@angular/router';
+import { retry } from 'rxjs/operators';
+import { Notification } from '../Notifications/Notification';
+@Injectable()
+export class ErrorInterceptor implements HttpInterceptor {
+    constructor(private authenticationService: UserService, private router: Router, private Notify: Notification) { }
+
+    // intercept(request: HttpRequest<any>, newRequest: HttpHandler): Observable<HttpEvent<any>> {
+
+    //     return newRequest.handle(request).pipe(catchError(err => {
+    //         if (err.status === 401) {
+    //             //if 401 response returned from api, logout from application & redirect to login page.
+    //           //  console.log("logout");
+    //             this.authenticationService.logout();
+    //         }
+
+    //         const error = err.error.message || err.statusText;
+    //         alert(error);
+    //         return Observable.throw(error);
+    //     }));
+    // }
+    intercept(request: HttpRequest<any>, next: HttpHandler) {
+
+        return next.handle(request)
+            .pipe(
+                catchError((error: HttpErrorResponse) => {
+                    let errorMessage = '';
+                    if (error.error instanceof ErrorEvent) {
+                        // client-side error
+                        errorMessage = `Error: ${error.error.message}`;
+                    } else {
+                        // server-side error
+                        errorMessage = `Error Status: ${error.status}\nMessage: ${error.message}`;
+                    }
+                    if (error.status === 401) {
+                        this.Notify.errorsmsg("Unauthorized Access")
+                        this.authenticationService.logout();
+                    }
+                    else {
+                        this.Notify.errorsmsg(errorMessage);
+                    }
+                    return throwError(errorMessage);
+                })
+            )
+    }
+}
