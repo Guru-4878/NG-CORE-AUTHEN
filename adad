@@ -1,0 +1,210 @@
+import {
+  Component,
+  Output,
+  EventEmitter,
+  OnInit,
+  AfterViewInit
+} from "@angular/core";
+import { TranslateService } from "@ngx-translate/core";
+
+import { LayoutService } from "../services/layout.service";
+import { ConfigService } from "../services/config.service";
+import { AuthService } from "../auth/auth.service";
+import { Router, NavigationEnd, ActivatedRoute } from "@angular/router";
+import { filter } from "rxjs/operators";
+import { Subscription } from "rxjs";
+import { QueryParamsHandling } from '@angular/router';
+
+//const SEPARATOR = " > ";
+
+export interface iBreadcrumb {
+  displayText: string;
+  navURL: string;
+}
+
+export interface MenuItem {
+  label?: string;
+  icon?: string;
+  command?: (event?: any) => void;
+  url?: string;
+  items?: MenuItem[];
+  expanded?: boolean;
+  disabled?: boolean;
+  visible?: boolean;
+  target?: string;
+  routerLinkActiveOptions?: any;
+  separator?: boolean;
+  badge?: string;
+  badgeStyleClass?: string;
+  style?:any;
+  styleClass?:string;
+  title?: string;
+  id?: string;
+  automationId?: any;
+  tabindex?: string;
+  routerLink?: any;
+  queryParams?: { [k: string]: any };
+  fragment?: string;
+  queryParamsHandling?: QueryParamsHandling;
+  preserveFragment?: boolean;
+  skipLocationChange?: boolean;
+  replaceUrl?: boolean;
+  state?: {
+      [k: string]: any;
+  }
+}
+
+@Component({
+  selector: "app-navbar",
+  templateUrl: "./navbar.component.html",
+  styleUrls: ["./navbar.component.scss"]
+})
+export class NavbarComponent implements OnInit, AfterViewInit {
+  currentSlug = this.route.snapshot.data.title;
+  currentSlug_url = '';
+  currentsubSlug = '';
+  currentLang = "en";
+  toggleClass = "ft-maximize";
+  placement = "bottom-right";
+  public isCollapsed = true;
+  @Output()
+  toggleHideSidebar = new EventEmitter<Object>();
+
+  public config: any = {};
+  userName: any = "";
+  client: any = "";
+  subscription: Subscription;
+
+  static readonly ROUTE_DATA_BREADCRUMB = 'title';
+  readonly home = {icon: 'pi pi-home', url: 'home'};
+  menuItems: MenuItem[];
+
+  constructor(
+    public translate: TranslateService,
+    private layoutService: LayoutService,
+    private configService: ConfigService,
+    private auth: AuthService,
+    private router: Router,
+    private route: ActivatedRoute
+  ) {
+    const browserLang: string = translate.getBrowserLang();
+    translate.use(browserLang.match(/en|es|pt|de/) ? browserLang : "en");
+  }
+
+  ngOnInit() {
+    this.config = this.configService.templateConf;
+    let userdata = JSON.parse(localStorage.userdata);
+    this.userName = userdata.firstname + " " + userdata.lastname;
+    this.client = this.auth.currentUserClient.client_name;
+    this.menuItems = this.createBreadcrumbs(this.route.root)
+    this.subscription = this.router.events
+    .pipe(filter(event => event instanceof NavigationEnd))
+    // .pipe(
+    //   filter(event => event instanceof NavigationEnd),
+    //   map(() => this.route),
+    //   map(route => {
+    //     while (route.firstChild) route = route.firstChild;
+    //     return route;
+    //   }),
+    //   switchMap(route => route.data),
+    //   map(() => {
+    //     this.menuItems = this.createBreadcrumbs(this.route.root);
+    //   })
+    // )
+    .subscribe(() => this.menuItems = this.createBreadcrumbs(this.route.root));
+   
+  }
+
+  setBreadcrumb() {
+    if (location.pathname.split('/').length > 3) {
+      this.currentSlug_url = null;
+      if (this.route.snapshot.url.length > 1) {
+        this.currentSlug_url = this.route.snapshot.url[1].path;
+      }
+    } else {
+      this.currentsubSlug = null;
+    }
+  }
+
+  ucFirst(string) {
+    if (!string) {
+      return string;
+    }
+    return string.charAt(0).toUpperCase() + string.slice(1);
+  }
+
+  ngAfterViewInit() {
+    if (this.config.layout.dir) {
+      const dir = this.config.layout.dir;
+      if (dir === "rtl") {
+        this.placement = "bottom-left";
+      } else if (dir === "ltr") {
+        this.placement = "bottom-right";
+      }
+    }
+  }
+
+  ChangeLanguage(language: string) {
+    this.translate.use(language);
+  }
+
+  ToggleClass() {
+    if (this.toggleClass === "ft-maximize") {
+      this.toggleClass = "ft-minimize";
+    } else {
+      this.toggleClass = "ft-maximize";
+    }
+  }
+
+  toggleNotificationSidebar() {
+    this.layoutService.emitChange(true);
+  }
+
+  toggleSidebar() {
+    console.log("afsd");
+    const appSidebar = document.getElementsByClassName("app-sidebar")[0];
+    if (appSidebar.classList.contains("hide-sidebar")) {
+      this.toggleHideSidebar.emit(false);
+    } else {
+      this.toggleHideSidebar.emit(true);
+    }
+  }
+
+  logout() {
+    this.auth.logout();
+  }
+
+  receiveMessage($event) {
+    this.currentsubSlug = $event
+  }
+
+  ngOnDestroy() {
+    if (this.subscription) {
+      this.subscription.unsubscribe();
+    }
+  }
+
+  private createBreadcrumbs(route: ActivatedRoute, url: string = '', breadcrumbs: MenuItem[] = []): MenuItem[] {
+    const children: ActivatedRoute[] = route.children;
+
+    if (children.length === 0) {
+      return breadcrumbs;
+    }
+
+    for (const child of children) {
+      const routeURL: string = child.snapshot.url.map(segment => segment.path).join('/');
+      if (routeURL !== '') {
+        url += `/${routeURL}`;
+      }
+      //url = url.replace("#", "");
+      const label = child.snapshot.data[NavbarComponent.ROUTE_DATA_BREADCRUMB];
+      let result = breadcrumbs.find((o) => o.label === label);
+      if (label && !result) {//(!isNullOrUndefined(label)) {
+        breadcrumbs.push({ label, url });
+      }
+      console.log(breadcrumbs);
+      return this.createBreadcrumbs(child, url, breadcrumbs);
+    }
+  }
+
+}
