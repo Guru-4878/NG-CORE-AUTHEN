@@ -1,0 +1,16 @@
+uniqueBy(arrobj) {
+    let obj2 = {};
+
+    const unique2 = (arr) => {
+      let result = [];
+      arr.forEach((item, i) => {
+        obj2[item['label']] = i;
+      });
+      for (let key in obj2) {
+        let index = obj2[key];
+        result.push(arr[index])
+      }
+      return result;
+    }
+    return unique2(arrobj)
+  }
