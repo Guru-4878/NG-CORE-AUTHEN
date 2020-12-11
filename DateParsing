@@ -1,0 +1,10 @@
+
+  dateToString = (date) => `${date.year}-${date.month}-${date.day}`;
+  
+  var date = new Date();
+  var year = date.getFullYear();
+  var month = date.getMonth() + 1;
+  var day = date.getDay();
+  let d: Date = new Date();
+  let Cu = { year: d.getFullYear(), month: d.getMonth() + 1, day: d.getDate() };
+  this.registerForm.controls.year_of_res.setValue(Cu);
